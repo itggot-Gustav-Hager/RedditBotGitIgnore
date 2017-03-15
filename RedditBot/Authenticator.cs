@@ -13,7 +13,11 @@ namespace RedditBot
     {
         private string _clientId;
         private string _clientSecret;
-
+        /// <summary>
+        /// An authenticator for reddit
+        /// </summary>
+        /// <param name="clientId">Reddit clientID</param>
+        /// <param name="clientSecret">Reddit clientSecret</param>
         public Authenticator(string clientId, string clientSecret)
         {
             _clientId = clientId;
@@ -22,13 +26,13 @@ namespace RedditBot
         /// <summary>
         /// Authenticates reddit bot with clientId, clientSecret
         ///
-        /// 
+        ///
         /// </summary>
         /// <param name="redditUsername">Reddit username to the account of the bot</param>
         /// <param name="redditPassword">Reddit password to the account of the bot</param>
         /// <param name="clientVersion">Version of the client</param>
         /// <param name="botName">the name of the bot, to be used in description</param>
-        public void DoAuthenticate(string redditUsername, string redditPassword, string clientVersion, string botName) { 
+        public void DoAuthenticate(string redditUsername, string redditPassword, string clientVersion, string botName) {
             using (var client = new HttpClient())
             {
                 var authenticationArray = Encoding.ASCII.GetBytes($"{_clientId}:{_clientSecret}");
@@ -57,8 +61,10 @@ namespace RedditBot
 
                 client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", accessToken);
 
-                client.GetAsync("https://oauth.reddit.com/api/v1/me").GetAwaiter().GetResult();
+                response = client.GetAsync("https://reddit.com/r/sweden/new.json").GetAwaiter().GetResult();
+
                 responseData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
                 Console.WriteLine(responseData);
                 Console.ReadKey();
             }

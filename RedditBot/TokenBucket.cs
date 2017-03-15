@@ -24,8 +24,8 @@ namespace RedditBot
         /// A bucket for your tokens.
         /// </summary>
         /// <param name="capacity">The starting amount of tokens in the bucket</param>
-        /// <param name="rate">The rate of token removal in seconds</param>
-        /// <exception cref="TooLowCapacityException">If Capacity is too low to start, =>0</exception>
+        /// <param name="rate">The timespan in which tokens may be removed in the bucket</param>
+        /// <exception cref="TooLowCapacityException">If Capacity is too low to start, => 0</exception>
         public TokenBucket(int capacity, int rate)
         {
             if (capacity <= 0)
@@ -39,7 +39,7 @@ namespace RedditBot
 
         }
 
-        public bool requestIsAllowed()
+        public bool RequestIsAllowed()
         {
             if (_tokens > 0)
             {
