@@ -56,18 +56,53 @@ namespace RedditBot
 
                 // Actual Token
                 var responseData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-
                 var accessToken = JObject.Parse(responseData).SelectToken("access_token").ToString();
 
                 client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", accessToken);
-
-                response = client.GetAsync("https://reddit.com/r/sweden/new.json").GetAwaiter().GetResult();
-
-                responseData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-
-                Console.WriteLine(responseData);
-                Console.ReadKey();
+                ParseJsonGetListOfValues(FetchJson(client, "https://reddit.com/r/sweden/new.json"), "title");
             }
+        }
+        /// <summary>
+        /// Takes HttpClient and a subredditurl, returns JObject
+        /// </summary>
+        /// <param name="client">HttpClient</param>
+        /// <param name="url">The url to the subreddit</param>
+        /// <returns>a JObject with the Json</returns>
+        private dynamic FetchJson(HttpClient client, string url)
+        {
+            var redditPageJsonResponse = client.GetAsync(url).GetAwaiter().GetResult();
+
+            var redditPageJsonData = redditPageJsonResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
+            dynamic postData = JObject.Parse(redditPageJsonData);
+
+            return postData;
+
+        }
+
+        /// <summary>
+        /// Takes JObject and a value. Fetches the value from all children
+        /// </summary>
+        /// <param name="subredditJsonData">JObject with Json from subreddit</param>
+        /// <param name="value">Json Value</param>
+        /// <returns>a list of JValues</returns>
+        private List<JValue> ParseJsonGetListOfValues(dynamic subredditJsonData, string value)
+        {
+
+            List<JValue> things = new List<JValue>();
+
+            foreach (var post in subredditJsonData.data.children)
+            {
+                things.Add(post.data.SelectToken(value));
+            }
+
+            //noob test pls dont judge
+
+            foreach (var node in things)
+            {
+                Console.WriteLine(node);
+            }
+            return things;
         }
     }
 }
