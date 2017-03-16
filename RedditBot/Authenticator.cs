@@ -59,7 +59,7 @@ namespace RedditBot
                 var accessToken = JObject.Parse(responseData).SelectToken("access_token").ToString();
 
                 client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", accessToken);
-                ParseJsonGetListOfValues(FetchJson(client, "https://reddit.com/r/sweden/new.json"), "title");
+                ParseJsonGetListOfValues(FetchJson(client, "sandboxtest"), "title");
             }
         }
         /// <summary>
@@ -68,9 +68,9 @@ namespace RedditBot
         /// <param name="client">HttpClient</param>
         /// <param name="url">The url to the subreddit</param>
         /// <returns>a JObject with the Json</returns>
-        private dynamic FetchJson(HttpClient client, string url)
+        private dynamic FetchJson(HttpClient client, string subreddit)
         {
-            var redditPageJsonResponse = client.GetAsync(url).GetAwaiter().GetResult();
+            var redditPageJsonResponse = client.GetAsync(String.Format("https://oauth.reddit.com/r/{0}/hot",subreddit)).GetAwaiter().GetResult();
 
             var redditPageJsonData = redditPageJsonResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
