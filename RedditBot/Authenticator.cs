@@ -85,23 +85,35 @@ namespace RedditBot
         /// </summary>
         /// <param name="subredditJsonData">JObject with Json from subreddit</param>
         /// <param name="value">Json Value</param>
-        /// <returns>a list of JValues</returns>
-        private List<JValue> ParseJsonGetListOfValues(dynamic subredditJsonData, string value)
+        /// <returns>a list of a List of JValues</returns>
+        private List<List<JValue>> ParseJsonGetListOfValues(dynamic subredditJsonData, string value)
         {
 
-            List<JValue> things = new List<JValue>();
+            List<List<JValue>> things = new List<List<JValue>>();
+            List<JValue> thingsToAddToThings = new List<JValue>();
+
 
             foreach (var post in subredditJsonData.data.children)
             {
-                things.Add(post.data.SelectToken(value));
+                thingsToAddToThings.Add(post.data.SelectToken(value));
+                thingsToAddToThings.Add(post.kind);
+                thingsToAddToThings.Add(post.data.id);
+                things.Add(thingsToAddToThings);
             }
 
             //noob test pls dont judge
 
-            foreach (var node in things)
+            foreach (var jValueNest in things)
             {
-                Console.WriteLine(node);
+                //Console.WriteLine(jValueNest.ToString());
+                foreach(var jValue in jValueNest)
+                {
+                    
+                   //Console.WriteLine(jValue);
+                    
+                }
             }
+            Console.WriteLine(things[0][0]);
             return things;
         }
     }
