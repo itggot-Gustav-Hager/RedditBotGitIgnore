@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Configuration;
+using System.Net.Http;
 
 namespace RedditBot
 {
@@ -11,9 +12,14 @@ namespace RedditBot
     {
         static void Main(string[] args)
         {
-            Authenticator auth = new Authenticator(ConfigurationManager.AppSettings["clientId"], ConfigurationManager.AppSettings["clientSecret"]);
-            auth.DoAuthenticate(ConfigurationManager.AppSettings["RedditUsername"], ConfigurationManager.AppSettings["RedditPassword"], "0.01", "PrettyNiceBot");
-            Console.ReadKey();
+            using (HttpClient client = new HttpClient())
+            {
+                RedditBot bot = new RedditBot(ConfigurationManager.AppSettings["clientId"], ConfigurationManager.AppSettings["clientSecret"]);
+                bot.DoAuthenticate(client, ConfigurationManager.AppSettings["RedditUsername"], ConfigurationManager.AppSettings["RedditPassword"], "0.01", "PrettyNiceBot");
+                var jObject = bot.ParseJsonGetListOfValues(bot.FetchJson(client, "sandboxtest"), "title");
+                bot.postCommentIfContainsKeyword(client, "test", "That's pretty nice!", jObject);
+                Console.ReadKey();
+            }
         }
     }
 }
