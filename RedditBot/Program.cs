@@ -14,10 +14,18 @@ namespace RedditBot
         {
             using (HttpClient client = new HttpClient())
             {
+                TokenBucket bucket = new TokenBucket(60, 60);
                 RedditBot bot = new RedditBot(ConfigurationManager.AppSettings["clientId"], ConfigurationManager.AppSettings["clientSecret"]);
                 bot.DoAuthenticate(client, ConfigurationManager.AppSettings["RedditUsername"], ConfigurationManager.AppSettings["RedditPassword"], "0.01", "PrettyNiceBot");
-                var jObject = bot.ParseJsonGetListOfValues(bot.FetchJson(client, "sandboxtest"), "title");
-                bot.postCommentIfContainsKeyword(client, "test", "That's pretty nice!", jObject);
+                var jObjects = bot.ParseJsonGetListOfValues(bot.FetchJson(client, "all/comments"), "link_title");
+                foreach(var jObject in jObjects)
+                {
+                    if (bucket.RequestIsAllowed())
+                    {
+                        bot.postCommentIfContainsKeyword(client, "what", "That's pretty nice!", jObject);
+                    }
+                }
+                
                 Console.ReadKey();
             }
         }

@@ -64,7 +64,7 @@ namespace RedditBot
         /// Takes HttpClient and a subredditurl, returns JObject
         /// </summary>
         /// <param name="client">HttpClient</param>
-        /// <param name="url">The url to the subreddit</param>
+        /// <param name="url">The subreddit and eventual /parameters</param>
         /// <returns>a JObject with the Json</returns>
         public dynamic FetchJson(HttpClient client, string subreddit)
         {
@@ -103,30 +103,25 @@ namespace RedditBot
             return redditObjectList;
         }
 
-        public void postCommentIfContainsKeyword(HttpClient client, string keyword, string comment, List<JObject> posts)
+        public void postCommentIfContainsKeyword(HttpClient client, string keyword, string comment, JObject post)
         {
-            foreach(var post in posts)
+            if (post.SelectToken("value").ToString().ToLower().Contains(keyword))
             {
-                if (post.SelectToken("value").ToString().Contains(keyword))
+                var formData = new Dictionary<string, string>
                 {
-                    var formData = new Dictionary<string, string>
-                    {
-                        { "api_type", "json" },
-                        { "text", comment },
-                        { "thing_id", String.Format("{0}_{1}",post.SelectToken("kind"), post.SelectToken("id")) }
-                    };
-                    var encodedFormData = new FormUrlEncodedContent(formData);
-                    var authUrl = "https://oauth.reddit.com/api/comment";
-                    var response = client.PostAsync(authUrl, encodedFormData).GetAwaiter().GetResult();
-                    Console.WriteLine(response.StatusCode);
-                }
-                else
-                {
-                    Console.WriteLine("your keyword wasn't found");
-                }
+                    { "api_type", "json" },
+                    { "text", comment },
+                    { "thing_id", String.Format("{0}_{1}",post.SelectToken("kind"), post.SelectToken("id")) }
+                };
+                var encodedFormData = new FormUrlEncodedContent(formData);
+                var authUrl = "https://oauth.reddit.com/api/comment";
+                var response = client.PostAsync(authUrl, encodedFormData).GetAwaiter().GetResult();
+                Console.WriteLine(response.StatusCode);
             }
-            
-            
+            else
+            {
+                Console.WriteLine("your keyword wasn't found");
+            }            
         }
     }
 }

@@ -67,7 +67,7 @@ namespace RedditBot
         {
             DateTime now = DateTime.Now;
             double difference = (now - _time).TotalSeconds;
-            Console.WriteLine(difference);
+            Console.WriteLine("get fucked son");
             if (difference >= _rate)
             {
                 _time = now;
