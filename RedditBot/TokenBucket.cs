@@ -67,7 +67,7 @@ namespace RedditBot
         {
             DateTime now = DateTime.Now;
             double difference = (now - _time).TotalSeconds;
-            Console.WriteLine("get fucked son");
+            Console.WriteLine("Your are out of tokens");
             if (difference >= _rate)
             {
                 _time = now;

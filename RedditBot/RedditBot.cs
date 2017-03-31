@@ -123,5 +123,6 @@ namespace RedditBot
                 Console.WriteLine("your keyword wasn't found");
             }            
         }
+        
     }
 }
