@@ -102,26 +102,43 @@ namespace RedditBot
 
             return redditObjectList;
         }
-
-        public void postCommentIfContainsKeyword(HttpClient client, string keyword, string comment, JObject post)
+        /// <summary>
+        /// checks if the selected value in a post contains a keyword
+        /// </summary>
+        /// <param name="keyword">the keyword that the JValue value should be searched for</param>
+        /// <param name="post">The JObject whoms JValue is to be searched</param>
+        /// <returns></returns>
+        public bool ContainsKeyword(string keyword, JObject post)
         {
             if (post.SelectToken("value").ToString().ToLower().Contains(keyword))
             {
-                var formData = new Dictionary<string, string>
+                return true;
+            }
+            else
+            {
+                Console.WriteLine("Your keyword wasn't found");
+                return false;
+            }            
+        }
+        /// <summary>
+        /// Posts a comment to reddit
+        /// </summary>
+        /// <param name="client">the HttpClient that is to be used</param>
+        /// <param name="comment">The comment which is to be commented</param>
+        /// <param name="post">The post that is answered to</param>
+        public void PostComment(HttpClient client, string comment, JObject post)
+        {
+            var formData = new Dictionary<string, string>
                 {
                     { "api_type", "json" },
                     { "text", comment },
                     { "thing_id", String.Format("{0}_{1}",post.SelectToken("kind"), post.SelectToken("id")) }
                 };
-                var encodedFormData = new FormUrlEncodedContent(formData);
-                var authUrl = "https://oauth.reddit.com/api/comment";
-                var response = client.PostAsync(authUrl, encodedFormData).GetAwaiter().GetResult();
-                Console.WriteLine(response.StatusCode);
-            }
-            else
-            {
-                Console.WriteLine("your keyword wasn't found");
-            }            
+            var encodedFormData = new FormUrlEncodedContent(formData);
+            var authUrl = "https://oauth.reddit.com/api/comment";
+            var response = client.PostAsync(authUrl, encodedFormData).GetAwaiter().GetResult();
+            Console.WriteLine(response.StatusCode);
+            Console.WriteLine("Your post has been submitted!");
         }
         
     }
