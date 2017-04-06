@@ -13,42 +13,78 @@ namespace RedditBot
     {
         private string _clientId;
         private string _clientSecret;
+        private string _username;
+        private string _password;
+        private TokenBucket _tokenBucket;
+        private string _botVersion;
+        private string _botName;
+        private string _subreddit;
+        private string _jsonKey;
+        private HttpClient _client;
+
         /// <summary>
-        /// An authenticator for reddit
+        /// A reddit bot
         /// </summary>
-        /// <param name="clientId">Reddit clientID</param>
-        /// <param name="clientSecret">Reddit clientSecret</param>
-        public RedditBot(string clientId, string clientSecret)
+        /// <param name="clientId">the Id of the client</param>
+        /// <param name="clientSecret">the Secret of the client</param>
+        /// <param name="username">the reddit username</param>
+        /// <param name="password">the reddit password</param>
+        /// <param name="client">a HttpClient to be used</param>
+        /// <param name="tokenBucket">a tokenBucket, from the class TokenBucket</param>
+        /// <param name="botVersion">the version of the bot</param>
+        /// <param name="botName">the name of the bot</param>
+        /// <param name="subreddit">the subreddit that should be searcehd for information, example: "sandboxtest", different paths can be used, for example /new, /comments</param>
+        /// <param name="jsonValue">the json key that is to be used</param>
+        public RedditBot(string clientId, string clientSecret, string username, string password, HttpClient client, TokenBucket tokenBucket, string botVersion, string botName, string subreddit, string jsonValue)
         {
             _clientId = clientId;
             _clientSecret = clientSecret;
+            _username = username;
+            _password = password;
+            _tokenBucket = tokenBucket;
+            _botVersion = botVersion;
+            _botName = botName;
+            _subreddit = subreddit;
+            _jsonKey = jsonValue;
+            _client = client;
+    }
+        public void StartBot()
+        {
+            Authenticate();
+            var jObjects = ParseJsonGetListOfValues(FetchJson());
+            Anagram anagramizer = new Anagram();
+            foreach (var jObject in jObjects)
+            {
+                if (_tokenBucket.RequestIsAllowed())
+                {
+                    if (ContainsKeyword("!anagramize", jObject))
+                    {
+                        PostComment($"Anagram: \n{anagramizer.Anagramize(jObject.value.ToString())}", jObject);
+                    }
+                }
+            }
+
         }
         /// <summary>
         /// Authenticates reddit bot with clientId, clientSecret
-        ///
-        ///
-        /// </summary>
-        /// <param name="redditUsername">Reddit username to the account of the bot</param>
-        /// <param name="redditPassword">Reddit password to the account of the bot</param>
-        /// <param name="clientVersion">Version of the client</param>
-        /// <param name="botName">the name of the bot, to be used in description</param>
-        public void DoAuthenticate(HttpClient client, string redditUsername, string redditPassword, string clientVersion, string botName)
+        /// </summary
+        public void Authenticate()
         {
             var authenticationArray = Encoding.ASCII.GetBytes($"{_clientId}:{_clientSecret}");
             var encodedAuthenticationString = Convert.ToBase64String(authenticationArray);
-            client.DefaultRequestHeaders.Authorization = new
+            _client.DefaultRequestHeaders.Authorization = new
             System.Net.Http.Headers.AuthenticationHeaderValue("Basic", encodedAuthenticationString);
-            client.DefaultRequestHeaders.Add("User-Agent", $"{botName} /v{clientVersion} by {redditUsername}");
+            _client.DefaultRequestHeaders.Add("User-Agent", $"{_botName} /v{_botVersion} by {_username}");
 
             var formData = new Dictionary<string, string>
             {
                 { "grant_type", "password" },
-                { "username", redditUsername },
-                { "password", redditPassword }
+                { "username", _username },
+                { "password", _password }
             };
             var encodedFormData = new FormUrlEncodedContent(formData);
             var authUrl = "https://www.reddit.com/api/v1/access_token";
-            var response = client.PostAsync(authUrl, encodedFormData).GetAwaiter().GetResult();
+            var response = _client.PostAsync(authUrl, encodedFormData).GetAwaiter().GetResult();
 
             // Response Code
             Console.WriteLine(response.StatusCode);
@@ -57,18 +93,16 @@ namespace RedditBot
             var responseData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             var accessToken = JObject.Parse(responseData).SelectToken("access_token").ToString();
 
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", accessToken);
+            _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", accessToken);
         }
         
         /// <summary>
         /// Takes HttpClient and a subredditurl, returns JObject
         /// </summary>
-        /// <param name="client">HttpClient</param>
-        /// <param name="url">The subreddit and eventual /parameters</param>
         /// <returns>a JObject with the Json</returns>
-        public dynamic FetchJson(HttpClient client, string subreddit)
+        public dynamic FetchJson()
         {
-            var redditPageJsonResponse = client.GetAsync(String.Format("https://oauth.reddit.com/r/{0}/",subreddit)).GetAwaiter().GetResult();
+            var redditPageJsonResponse = _client.GetAsync(String.Format("https://oauth.reddit.com/r/{0}/",_subreddit)).GetAwaiter().GetResult();
 
             var redditPageJsonData = redditPageJsonResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
@@ -81,10 +115,10 @@ namespace RedditBot
         /// <summary>
         /// Takes JObject and a value. Fetches the value from all children
         /// </summary>
-        /// <param name="subredditJsonData">JObject with Json from subreddit</param>
+        /// <param name="subredditJsonData">dynamic with Json from subreddit</param>
         /// <param name="value">Json Value</param>
         /// <returns>a list of a List of JValues</returns>
-        public List<JObject> ParseJsonGetListOfValues(dynamic subredditJsonData, string value)
+        public List<JObject> ParseJsonGetListOfValues(dynamic subredditJsonData)
         {
 
             List<JObject> redditObjectList = new List<JObject>();
@@ -94,7 +128,7 @@ namespace RedditBot
             foreach (var post in subredditJsonData.data.children)
             {
                 dynamic thingsToAddToThings = new JObject();
-                thingsToAddToThings.value = post.data.SelectToken(value);
+                thingsToAddToThings.value = post.data.SelectToken(_jsonKey);
                 thingsToAddToThings.kind = post.kind;
                 thingsToAddToThings.id = post.data.id;
                 redditObjectList.Add(thingsToAddToThings);
@@ -126,7 +160,7 @@ namespace RedditBot
         /// <param name="client">the HttpClient that is to be used</param>
         /// <param name="comment">The comment which is to be commented</param>
         /// <param name="post">The post that is answered to</param>
-        public void PostComment(HttpClient client, string comment, JObject post)
+        public void PostComment(string comment, JObject post)
         {
             var formData = new Dictionary<string, string>
                 {
@@ -136,7 +170,7 @@ namespace RedditBot
                 };
             var encodedFormData = new FormUrlEncodedContent(formData);
             var authUrl = "https://oauth.reddit.com/api/comment";
-            var response = client.PostAsync(authUrl, encodedFormData).GetAwaiter().GetResult();
+            var response = _client.PostAsync(authUrl, encodedFormData).GetAwaiter().GetResult();
             Console.WriteLine(response.StatusCode);
             Console.WriteLine("Your post has been submitted!");
         }

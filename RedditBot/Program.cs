@@ -15,23 +15,18 @@ namespace RedditBot
             using (HttpClient client = new HttpClient())
             {
                 TokenBucket bucket = new TokenBucket(60, 60);
-                RedditBot bot = new RedditBot(ConfigurationManager.AppSettings["clientId"], ConfigurationManager.AppSettings["clientSecret"]);
-                bot.DoAuthenticate(client, ConfigurationManager.AppSettings["RedditUsername"], ConfigurationManager.AppSettings["RedditPassword"], "0.01", "PrettyNiceBot");
-                var jObjects = bot.ParseJsonGetListOfValues(bot.FetchJson(client, "sandboxtest/comments"), "body");
-                Anagram anagramizer = new Anagram();
-                foreach (var jObject in jObjects)
-                {
-                    if (bucket.RequestIsAllowed())
-                    {
-                        if (bot.ContainsKeyword("!anagramize", jObject))
-                        {
-                            bot.PostComment(client, anagramizer.Anagramize(jObject.value.ToString()), jObject);
-                        }
-                    }
-                }
-                
-                
-                Console.ReadKey();
+                RedditBot bot = new RedditBot(
+                    ConfigurationManager.AppSettings["clientId"],
+                    ConfigurationManager.AppSettings["clientSecret"], 
+                    ConfigurationManager.AppSettings["RedditUsername"], 
+                    ConfigurationManager.AppSettings["RedditPassword"], 
+                    client,  
+                    bucket, 
+                    "0.01", 
+                    "PrettyNiceBot", 
+                    "sandboxtest/comments", 
+                    "body" );
+                bot.StartBot();
             }
         }
     }
