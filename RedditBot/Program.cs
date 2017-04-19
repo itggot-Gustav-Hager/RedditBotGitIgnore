@@ -27,6 +27,7 @@ namespace RedditBot
                     "sandboxtest/comments", 
                     "body" );
                 bot.StartBot();
+                Console.ReadKey();
             }
         }
     }

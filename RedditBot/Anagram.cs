@@ -22,18 +22,39 @@ namespace RedditBot
         /// <param name="sentence">String, Can't be longer than 8 words</param>
         public string Anagramize(string sentence)
         {
-            var correctedSentence = sentence.Remove(0, 12);
+            var splitAndCutSentence = sentence.Remove(0, 12).Split(' ');
+            var correctedSentence = "";
+            int i = 0;
+            foreach (string word in splitAndCutSentence)
+            {
+                if(i <= 3)
+                {
+                    correctedSentence += $"{word} ";
+                }
+                i++;
+            }
+            
+
+
 
             var formData = new Dictionary<string, string>
             {
-                    { "sourcetext", correctedSentence },
+                    { "sourcetext", correctedSentence},
                     { "lang", "Swedish" },
                     { "lines", "1" },
-                    { "maxword", "8" }
+                    { "maxword", "2" },
+                    { "minchars", "1" },
+                    { "sort", "0" },
+                    {"outlang", "sv" },
+
                 };
             var correctedContent = new FormUrlEncodedContent(formData).ReadAsStringAsync().GetAwaiter().GetResult();
-            var url = $"https://www.arrak.fi/cgi-bin/inline_ag.pl?{correctedContent}";
+            string url = $"https://www.arrak.fi/cgi-bin/inline_ag.pl?{correctedContent}";
+            url = url.Replace("+", "%20");
+
+            Console.WriteLine(url);
             var response = _client.GetStringAsync(url).GetAwaiter().GetResult();
+            Console.WriteLine(response);
             HtmlDocument html = new HtmlDocument();
             html.LoadHtml(response);
             var anagram = html.DocumentNode.SelectSingleNode("pre").InnerHtml;
