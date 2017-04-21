@@ -36,7 +36,6 @@ namespace RedditBot
             _tokens = capacity;
             _rate = rate;
             _time = DateTime.Now;
-
         }
 
         public bool RequestIsAllowed()
@@ -51,9 +50,7 @@ namespace RedditBot
                 if (Refill())
                 {
                     _tokens -= 1;
-                    Console.WriteLine("hej");
                     return true;
-
                 }
                 else
                 {
@@ -67,10 +64,9 @@ namespace RedditBot
         {
             DateTime now = DateTime.Now;
             double difference = (now - _time).TotalSeconds;
-            Console.WriteLine("Your are out of tokens");
             if (difference >= _rate)
             {
-                _time = now;
+                _time = DateTime.Now;
                 _tokens = _capacity;
                 return true;
             }
@@ -78,6 +74,11 @@ namespace RedditBot
             {
                 return false;
             }
+        }
+
+        public int TimeUntilRefresh()
+        {
+            return _rate - (DateTime.Now - _time).Seconds;
         }
     }
 }

@@ -48,18 +48,31 @@ namespace RedditBot
             _jsonKey = jsonValue;
             _client = client;
     }
+        /// <summary>
+        /// Starts the reddit bot
+        /// </summary>
         public void StartBot()
         {
             Authenticate();
             var jObjects = ParseJsonGetListOfValues(FetchJson());
             Anagram anagramizer = new Anagram();
-            foreach (var jObject in jObjects)
+            int i = 0;
+            while (i < 1)
             {
-                if (_tokenBucket.RequestIsAllowed())
+                foreach (var jObject in jObjects)
                 {
-                    if (ContainsKeyword("!anagramize", jObject))
+                    if (_tokenBucket.RequestIsAllowed())
                     {
-                        PostComment($"Anagram: \n{anagramizer.Anagramize(jObject.value.ToString())}", jObject);
+                        if (ContainsKeyword("!anagramize", jObject))
+                        {
+                            PostComment($"Anagram: \n{anagramizer.Anagramize(jObject.value.ToString())}", jObject);
+                        }
+                    }
+                    else
+                    {
+                        int time = _tokenBucket.TimeUntilRefresh();
+                        Console.WriteLine($"out of tokens, sleeping for {time} seconds");
+                        System.Threading.Thread.Sleep(time*1000);
                     }
                 }
             }
@@ -172,7 +185,7 @@ namespace RedditBot
             var authUrl = "https://oauth.reddit.com/api/comment";
             var response = _client.PostAsync(authUrl, encodedFormData).GetAwaiter().GetResult();
             Console.WriteLine(response.StatusCode);
-            Console.WriteLine("Your post has been submitted!");
+            Console.WriteLine($"Your response to {post.SelectToken("id")} has been submitted!");
         }
         
     }
