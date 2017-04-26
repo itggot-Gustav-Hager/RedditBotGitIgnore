@@ -9,6 +9,14 @@ using Newtonsoft.Json.Linq;
 
 namespace RedditBot
 {
+    class FaultyLoginException : Exception
+    {
+        public FaultyLoginException(string message)
+            : base(message)
+        {
+
+        }
+    }
     class RedditBot
     {
         private string _clientId;
@@ -21,7 +29,7 @@ namespace RedditBot
         private string _subreddit;
         private string _jsonKey;
         private HttpClient _client;
-
+        
         /// <summary>
         /// A reddit bot
         /// </summary>
@@ -51,6 +59,15 @@ namespace RedditBot
         /// <summary>
         /// Starts the reddit bot
         /// </summary>
+        /// 
+        /// <example>
+        /// bot.Startbot();
+        /// >>Your keyword wasn't found
+        /// >>OK
+        /// >>Your post to user x has been submitted!
+        /// >>Your keyword wasn't found (...)
+        /// >>Out of tokens, sleeping for y seconds.
+        /// </example>
         public void StartBot()
         {
             Authenticate();
@@ -71,7 +88,7 @@ namespace RedditBot
                     else
                     {
                         int time = _tokenBucket.TimeUntilRefresh();
-                        Console.WriteLine($"out of tokens, sleeping for {time} seconds");
+                        Console.WriteLine($"Out of tokens, sleeping for {time} seconds.");
                         System.Threading.Thread.Sleep(time*1000);
                     }
                 }
@@ -81,6 +98,11 @@ namespace RedditBot
         /// <summary>
         /// Authenticates reddit bot with clientId, clientSecret
         /// </summary
+        /// <exception cref="FaultyLoginException">If the statuscode isn't OK, the login has failed</exception>
+        /// <example>
+        /// bot.Authenticate();
+        /// >>OK
+        /// </example>
         public void Authenticate()
         {
             var authenticationArray = Encoding.ASCII.GetBytes($"{_clientId}:{_clientSecret}");
@@ -98,7 +120,10 @@ namespace RedditBot
             var encodedFormData = new FormUrlEncodedContent(formData);
             var authUrl = "https://www.reddit.com/api/v1/access_token";
             var response = _client.PostAsync(authUrl, encodedFormData).GetAwaiter().GetResult();
-
+            if (response.StatusCode.ToString() != "OK")
+            {
+                throw new FaultyLoginException("Your login information is faulty");
+            }
             // Response Code
             Console.WriteLine(response.StatusCode);
 
@@ -113,6 +138,10 @@ namespace RedditBot
         /// Takes HttpClient and a subredditurl, returns JObject
         /// </summary>
         /// <returns>a JObject with the Json</returns>
+        /// <example>
+        /// bot.FetchJson();
+        /// postData = {{"kind": "listing"}, (...)};
+        /// </example>
         public dynamic FetchJson()
         {
             var redditPageJsonResponse = _client.GetAsync(String.Format("https://oauth.reddit.com/r/{0}/",_subreddit)).GetAwaiter().GetResult();
@@ -122,7 +151,6 @@ namespace RedditBot
             dynamic postData = JObject.Parse(redditPageJsonData);
 
             return postData;
-
         }
 
         /// <summary>
@@ -131,13 +159,12 @@ namespace RedditBot
         /// <param name="subredditJsonData">dynamic with Json from subreddit</param>
         /// <param name="value">Json Value</param>
         /// <returns>a list of a List of JValues</returns>
+        /// <example>var redditObjectlist = ParseJsonGetListOfValues(postData);</example>
         public List<JObject> ParseJsonGetListOfValues(dynamic subredditJsonData)
         {
 
             List<JObject> redditObjectList = new List<JObject>();
             
-
-
             foreach (var post in subredditJsonData.data.children)
             {
                 dynamic thingsToAddToThings = new JObject();
@@ -154,7 +181,8 @@ namespace RedditBot
         /// </summary>
         /// <param name="keyword">the keyword that the JValue value should be searched for</param>
         /// <param name="post">The JObject whoms JValue is to be searched</param>
-        /// <returns></returns>
+        /// <returns>bool</returns>
+        /// <example>bool z = bot.ContainsKeyword(x,y);</example>
         public bool ContainsKeyword(string keyword, JObject post)
         {
             if (post.SelectToken("value").ToString().ToLower().Contains(keyword))
@@ -165,7 +193,7 @@ namespace RedditBot
             {
                 Console.WriteLine("Your keyword wasn't found");
                 return false;
-            }            
+            }
         }
         /// <summary>
         /// Posts a comment to reddit
@@ -173,6 +201,11 @@ namespace RedditBot
         /// <param name="client">the HttpClient that is to be used</param>
         /// <param name="comment">The comment which is to be commented</param>
         /// <param name="post">The post that is answered to</param>
+        /// <example>
+        /// bot.PostComment(x,y);
+        /// >>OK
+        /// >>"Your response to y.SelectToken("id") has beed submitted!"
+        /// </example>
         public void PostComment(string comment, JObject post)
         {
             var formData = new Dictionary<string, string>

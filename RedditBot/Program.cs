@@ -14,20 +14,31 @@ namespace RedditBot
         {
             using (HttpClient client = new HttpClient())
             {
-                TokenBucket bucket = new TokenBucket(60, 60);
-                RedditBot bot = new RedditBot(
-                    ConfigurationManager.AppSettings["clientId"],
-                    ConfigurationManager.AppSettings["clientSecret"], 
-                    ConfigurationManager.AppSettings["RedditUsername"], 
-                    ConfigurationManager.AppSettings["RedditPassword"], 
-                    client,  
-                    bucket, 
-                    "0.01", 
-                    "PrettyNiceBot", 
-                    "sandboxtest/comments", 
-                    "body" );
-                bot.StartBot();
-                Console.ReadKey();
+                try
+                {
+                    TokenBucket bucket = new TokenBucket(60, 60);                
+                    RedditBot bot = new RedditBot(
+                        ConfigurationManager.AppSettings["clientId"],
+                        ConfigurationManager.AppSettings["clientSecret"], 
+                        ConfigurationManager.AppSettings["RedditUsername"], 
+                        ConfigurationManager.AppSettings["RedditPassword"], 
+                        client,  
+                        bucket, 
+                        "0.01", 
+                        "PrettyNiceBot", 
+                        "sandboxtest/comments", 
+                        "body" );
+                    bot.StartBot();
+                    Console.ReadKey();
+                }
+                catch (TooLowCapacityException exception)
+                {
+                    Console.WriteLine($"Error thrown '{exception.Message}' ");
+                }
+                catch (FaultyLoginException exception)
+                {
+                    Console.WriteLine($"Error thrown '{exception.Message}' ");
+                }
             }
         }
     }

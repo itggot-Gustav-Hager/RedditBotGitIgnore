@@ -37,7 +37,13 @@ namespace RedditBot
             _rate = rate;
             _time = DateTime.Now;
         }
-
+        /// <summary>
+        /// Returns a bool corresponding to if a request is allowed or not
+        /// </summary>
+        /// <returns>bool</returns>
+        /// <example>
+        /// bool a = bucket.RequestIsAllowed();
+        /// </example>
         public bool RequestIsAllowed()
         {
             if (_tokens > 0)
@@ -75,7 +81,14 @@ namespace RedditBot
                 return false;
             }
         }
-
+        /// <summary>
+        /// Returns the time until refresh
+        /// </summary>
+        /// <returns>String</returns>
+        /// <example>
+        /// int timeUntilRefresh = bucket.TimeUntilRefresh();
+        /// timeUntilRefresh == 57;
+        /// </example>
         public int TimeUntilRefresh()
         {
             return _rate - (DateTime.Now - _time).Seconds;

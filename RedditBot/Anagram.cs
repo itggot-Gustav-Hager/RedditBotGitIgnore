@@ -22,6 +22,10 @@ namespace RedditBot
         /// Takes maximum of 20 characters
         /// </summary>
         /// <param name="sentence">String, Can't be longer than 8 words</param>
+        /// <example>
+        /// var anagram = anagramizer.Anagramize("hejsan");
+        /// anagram == "hajens";
+        /// </example>
         public string Anagramize(string sentence)
         {
             var splitAndCutSentence = sentence.Remove(0, 12).Split(' ');
