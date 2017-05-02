@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace RedditBot
 {
+
     class FaultyLoginException : Exception
     {
         public FaultyLoginException(string message)
@@ -17,6 +18,7 @@ namespace RedditBot
 
         }
     }
+
     class RedditBot
     {
         private string _clientId;
@@ -55,7 +57,8 @@ namespace RedditBot
             _subreddit = subreddit;
             _jsonKey = jsonValue;
             _client = client;
-    }
+        }
+
         /// <summary>
         /// Starts the reddit bot
         /// </summary>
@@ -73,8 +76,7 @@ namespace RedditBot
             Authenticate();
             var jObjects = ParseJsonGetListOfValues(FetchJson());
             Anagram anagramizer = new Anagram();
-            int i = 0;
-            while (i < 1)
+            while (true)
             {
                 foreach (var jObject in jObjects)
                 {
@@ -95,6 +97,7 @@ namespace RedditBot
             }
 
         }
+
         /// <summary>
         /// Authenticates reddit bot with clientId, clientSecret
         /// </summary
@@ -124,13 +127,11 @@ namespace RedditBot
             {
                 throw new FaultyLoginException("Your login information is faulty");
             }
-            // Response Code
+
             Console.WriteLine(response.StatusCode);
 
-            // Actual Token
             var responseData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             var accessToken = JObject.Parse(responseData).SelectToken("access_token").ToString();
-
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", accessToken);
         }
         
@@ -176,6 +177,7 @@ namespace RedditBot
 
             return redditObjectList;
         }
+
         /// <summary>
         /// checks if the selected value in a post contains a keyword
         /// </summary>
@@ -195,6 +197,7 @@ namespace RedditBot
                 return false;
             }
         }
+
         /// <summary>
         /// Posts a comment to reddit
         /// </summary>

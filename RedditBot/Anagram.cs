@@ -16,6 +16,7 @@ namespace RedditBot
         {
             _client = new HttpClient();
         }
+
         /// <summary>
         /// Creates an anagram of a given sentence
         /// Only takes set amount of words
