@@ -9,8 +9,10 @@ using Newtonsoft.Json.Linq;
 
 namespace RedditBot
 {
-
-    class FaultyLoginException : Exception
+    /// <summary>
+    /// An exception thrown when login information is faulty.
+    /// </summary>
+    public class FaultyLoginException : Exception
     {
         public FaultyLoginException(string message)
             : base(message)
@@ -19,7 +21,10 @@ namespace RedditBot
         }
     }
 
-    class RedditBot
+    /// <summary>
+    /// A Bot for reddit that can authorize and post posts.
+    /// </summary>
+    public class RedditBot
     {
         private string _clientId;
         private string _clientSecret;
@@ -33,7 +38,7 @@ namespace RedditBot
         private HttpClient _client;
         
         /// <summary>
-        /// A reddit bot
+        /// A reddit bot (constructor).
         /// </summary>
         /// <param name="clientId">the Id of the client</param>
         /// <param name="clientSecret">the Secret of the client</param>
@@ -60,7 +65,7 @@ namespace RedditBot
         }
 
         /// <summary>
-        /// Starts the reddit bot
+        /// Starts the reddit bot.
         /// </summary>
         /// 
         /// <example>
@@ -95,12 +100,11 @@ namespace RedditBot
                     }
                 }
             }
-
         }
 
         /// <summary>
-        /// Authenticates reddit bot with clientId, clientSecret
-        /// </summary
+        /// Authenticates reddit bot with clientId, clientSecret.
+        /// </summary>
         /// <exception cref="FaultyLoginException">If the statuscode isn't OK, the login has failed</exception>
         /// <example>
         /// bot.Authenticate();
@@ -136,12 +140,12 @@ namespace RedditBot
         }
         
         /// <summary>
-        /// Takes HttpClient and a subredditurl, returns JObject
+        /// Takes HttpClient and a subredditurl, returns JObject.
         /// </summary>
-        /// <returns>a JObject with the Json</returns>
+        /// <returns>a dynamic JObject with the Json</returns>
         /// <example>
-        /// bot.FetchJson();
-        /// postData = {{"kind": "listing"}, (...)};
+        /// postData = bot.FetchJson();
+        /// postData == {{"kind": "listing"}, (...)};
         /// </example>
         public dynamic FetchJson()
         {
@@ -155,11 +159,10 @@ namespace RedditBot
         }
 
         /// <summary>
-        /// Takes JObject and a value. Fetches the value from all children
+        /// Takes JObject and a value given upon construction of bot. Fetches the value from all children of the JObject.
         /// </summary>
         /// <param name="subredditJsonData">dynamic with Json from subreddit</param>
-        /// <param name="value">Json Value</param>
-        /// <returns>a list of a List of JValues</returns>
+        /// <returns>a list of a List of JObjects</returns>
         /// <example>var redditObjectlist = ParseJsonGetListOfValues(postData);</example>
         public List<JObject> ParseJsonGetListOfValues(dynamic subredditJsonData)
         {
@@ -201,7 +204,6 @@ namespace RedditBot
         /// <summary>
         /// Posts a comment to reddit
         /// </summary>
-        /// <param name="client">the HttpClient that is to be used</param>
         /// <param name="comment">The comment which is to be commented</param>
         /// <param name="post">The post that is answered to</param>
         /// <example>

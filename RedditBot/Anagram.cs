@@ -8,7 +8,10 @@ using HtmlAgilityPack;
 
 namespace RedditBot
 {
-    class Anagram
+    /// <summary>
+    /// Creates Anagrams from swedish words.
+    /// </summary>
+    public class Anagram
     {
         private HttpClient _client;
 
@@ -18,11 +21,12 @@ namespace RedditBot
         }
 
         /// <summary>
-        /// Creates an anagram of a given sentence
-        /// Only takes set amount of words
-        /// Takes maximum of 20 characters
+        /// Creates an anagram of a given sentence.
+        /// Only takes set amount of words.
+        /// Takes maximum of 20 characters.
         /// </summary>
         /// <param name="sentence">String, Can't be longer than 8 words</param>
+        /// <returns>String</returns>
         /// <example>
         /// var anagram = anagramizer.Anagramize("hejsan");
         /// anagram == "hajens";

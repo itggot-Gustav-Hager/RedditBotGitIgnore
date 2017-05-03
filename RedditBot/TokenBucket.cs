@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace RedditBot
 {
-    class TooLowCapacityException : Exception
+    /// <summary>
+    /// An exception thrown when the capacity is too low for the bucket to work.
+    /// </summary>
+    public class TooLowCapacityException : Exception
     {
         public TooLowCapacityException(string message)
             : base(message)
@@ -14,7 +17,10 @@ namespace RedditBot
 
         }
     }
-    class TokenBucket
+    /// <summary>
+    /// A token bucket that tells you if a request is allowed or not based on its starting conditions.
+    /// </summary>
+    public class TokenBucket
     {
         private int _tokens;
         private int _capacity;
@@ -25,7 +31,7 @@ namespace RedditBot
         /// </summary>
         /// <param name="capacity">The starting amount of tokens in the bucket</param>
         /// <param name="rate">The timespan in which tokens may be removed in the bucket</param>
-        /// <exception cref="TooLowCapacityException">If Capacity is too low to start, => 0</exception>
+        /// <exception cref="TooLowCapacityException">If Capacity is too low to start, 0 => </exception>
         public TokenBucket(int capacity, int rate)
         {
             if (capacity <= 0)
@@ -38,7 +44,7 @@ namespace RedditBot
             _time = DateTime.Now;
         }
         /// <summary>
-        /// Returns a bool corresponding to if a request is allowed or not
+        /// Returns a bool corresponding to if a request is allowed or not.
         /// </summary>
         /// <returns>bool</returns>
         /// <example>
@@ -82,9 +88,9 @@ namespace RedditBot
             }
         }
         /// <summary>
-        /// Returns the time until refresh
+        /// Returns the time until refresh.
         /// </summary>
-        /// <returns>String</returns>
+        /// <returns>Int</returns>
         /// <example>
         /// int timeUntilRefresh = bucket.TimeUntilRefresh();
         /// timeUntilRefresh == 57;
